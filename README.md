@@ -23,7 +23,7 @@ Source of the public website of the ultrasound & acoustics team in the [Physics 
 
 ## Viewing the site on your computer
 
-Requires [Node.js](https://nodejs.org) 22.19 or later (macOS: `brew install node`).
+Requires [Node.js](https://nodejs.org) 24 (or 22.23.4+) (macOS: `brew install node`).
 
 ```bash
 npm install        # once, or after package.json changes

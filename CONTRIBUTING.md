@@ -121,7 +121,7 @@ All colours, fonts and spacing live in `src/styles/theme.css`. Site title, email
 
 ## Running locally (optional)
 
-Requires Node ≥ 22.19.
+Requires Node 24 (or ≥ 22.23.4).
 
 ```bash
 npm install
