@@ -1,0 +1,91 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getTools } from '../../lib/content';
+
+const software = await getTools('software');
+const datasets = await getTools('dataset');
+const labTools = (await getCollection('labTools')).sort((a, b) => a.data.name.localeCompare(b.data.name));
+---
+
+<Base title="Software & Data" description="Open-source software and datasets from the POF Acoustics team.">
+  <div class="container">
+    <header class="page-header">
+      <h1>Software & Data</h1>
+      <p>Open tools from our research. Documentation lives with each project; follow the links.</p>
+    </header>
+
+    <section class="block">
+      <h2>Software</h2>
+      <div class="grid">
+        {software.map((tool) => <ToolCard tool={tool} />)}
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Datasets</h2>
+      {
+        datasets.length > 0 ? (
+          <div class="grid">
+            {datasets.map((tool) => <ToolCard tool={tool} />)}
+          </div>
+        ) : (
+          <p class="muted">Datasets will be listed here once published.</p>
+        )
+      }
+    </section>
+
+    {
+      labTools.length > 0 && (
+        <section class="block">
+          <h2>Lab tools</h2>
+          <p class="muted">Processing and analysis repositories. <Icon name="lock" size={14} /> = requires POF-ultrasound organisation access.</p>
+          <ul class="lab">
+            {labTools.map((t) => (
+              <li>
+                <a href={t.data.url}>{t.data.name}</a>
+                {t.data.private && (
+                  <span class="lock" title="Requires organisation access">
+                    <Icon name="lock" size={14} />
+                    <span class="visually-hidden">(private)</span>
+                  </span>
+                )}
+                <span class="muted"> — {t.data.description}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .block {
+    padding-block: var(--space-5);
+  }
+  .block h2 {
+    font-size: var(--text-xl);
+  }
+  .lab {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid var(--color-border);
+  }
+  .lab li {
+    padding-block: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--text-sm);
+  }
+  .lab a {
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+  .lock {
+    color: var(--color-text-muted);
+    margin-left: var(--space-1);
+  }
+</style>

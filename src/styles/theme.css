@@ -1,0 +1,124 @@
+/*
+ * Design tokens — the ONLY place to change colours, fonts and spacing.
+ *
+ * Components use the semantic tokens (--color-bg, --color-text, ...) only,
+ * never raw hex values. Dark mode = one extra block redefining the colour
+ * tokens (template at the bottom of this file).
+ */
+
+:root {
+  /* ---- Palette: ink (default) ---------------------------------------- */
+  --accent-600: #1f4e79;
+  --accent-700: #173b5c;
+  --accent-100: #e6edf4;
+  --accent-50: #f2f6fa;
+
+  /* ---- Neutrals ------------------------------------------------------- */
+  --gray-0: #ffffff;
+  --gray-50: #f7f8f9;
+  --gray-100: #eef0f2;
+  --gray-200: #dfe2e6;
+  --gray-400: #9aa1a9;
+  --gray-600: #5b636c;
+  --gray-800: #2a2f35;
+  --gray-900: #161a1e;
+
+  /* ---- Semantic colours (use these in components) --------------------- */
+  --color-bg: var(--gray-0);
+  --color-surface: var(--gray-50);
+  --color-surface-strong: var(--gray-100);
+  --color-border: var(--gray-200);
+  --color-text: var(--gray-900);
+  --color-text-muted: var(--gray-600);
+  --color-text-faint: var(--gray-400);
+  --color-accent: var(--accent-600);
+  --color-accent-hover: var(--accent-700);
+  --color-accent-soft: var(--accent-100);
+  --color-on-accent: var(--gray-0);
+  --color-header-bg: var(--accent-50);
+  /* Background illustration: colour and strength (0 = invisible). */
+  --bg-art-color: var(--accent-600);
+  --bg-art-opacity: 0.14;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #fdf3dc;
+
+  /* ---- Typography ----------------------------------------------------- */
+  --font-sans: 'Source Sans 3 Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-serif);
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.625rem;
+  --leading: 1.6;
+
+  /* ---- Spacing & shape ------------------------------------------------ */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --content-width: 72rem;
+  --prose-width: 44rem;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.04);
+
+  color-scheme: light;
+}
+
+/* ---- Palette previews (temporary, see /palettes/) ---------------------- */
+:root[data-palette='petrol'] {
+  --accent-600: #0f5c63;
+  --accent-700: #0a464c;
+  --accent-100: #e3f0f0;
+  --accent-50: #f1f7f7;
+}
+:root[data-palette='indigo'] {
+  --accent-600: #3b3f8f;
+  --accent-700: #2c2f6e;
+  --accent-100: #e8e9f5;
+  --accent-50: #f4f4fa;
+}
+:root[data-palette='graphite'] {
+  --accent-600: #c8102e; /* close to UT red */
+  --accent-700: #9e0c24;
+  --accent-100: #f8e7ea;
+  --accent-50: #fbf3f4;
+  --gray-900: #1b1b1b;
+  --gray-800: #2d2d2d;
+}
+:root[data-palette='graphite'] {
+  --color-header-bg: var(--gray-50);
+  --bg-art-color: var(--gray-800);
+}
+
+/*
+ * ---- Dark mode (post-launch) --------------------------------------------
+ * Uncomment and tune. Only colour tokens need redefining.
+ *
+ * @media (prefers-color-scheme: dark) {
+ *   :root:not([data-theme='light']) {
+ *     --color-bg: #121519;
+ *     --color-surface: #1a1e23;
+ *     --color-surface-strong: #22272d;
+ *     --color-border: #2f353c;
+ *     --color-text: #e8eaed;
+ *     --color-text-muted: #a9b0b8;
+ *     --color-text-faint: #6f7780;
+ *     --color-accent: #7fb0e0;
+ *     --color-accent-hover: #a6c8ea;
+ *     --color-accent-soft: #1c2a38;
+ *     --color-on-accent: #0b0d10;
+ *     color-scheme: dark;
+ *   }
+ * }
+ */

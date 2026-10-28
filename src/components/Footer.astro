@@ -1,0 +1,86 @@
+---
+import { Image } from 'astro:assets';
+import utLogo from '../assets/logos/ut.svg';
+import PofLogo from './PofLogo.astro';
+import { site } from '../site.config';
+import { url } from '../lib/url';
+---
+
+<footer class="site-footer">
+  <div class="container cols">
+    <div>
+      <div class="logos">
+        <a href={site.links.pof}><PofLogo height={32} /></a>
+        <a href={site.links.ut}><Image src={utLogo} alt="University of Twente" height={14} class="ut" /></a>
+      </div>
+      <address>
+        {site.address.map((line) => <>{line}<br /></>)}
+      </address>
+    </div>
+    <div>
+      <ul>
+        <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+        <li><a href={site.links.github}>GitHub</a></li>
+        <li><a href={url('/rss.xml')}>News feed (RSS)</a></li>
+        <li><a href={site.links.pof}>Physics of Fluids group</a></li>
+      </ul>
+    </div>
+    <div class="small">
+      <p>
+        This site sets no cookies, uses no analytics and loads nothing from third parties.
+      </p>
+      <p>
+        Code <a href={site.links.repo}>MIT</a> · text CC BY 4.0 · photos and logos all rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding-block: var(--space-6);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .cols {
+    display: grid;
+    gap: var(--space-5);
+  }
+  @media (min-width: 48rem) {
+    .cols {
+      grid-template-columns: 1.2fr 1fr 1.2fr;
+    }
+  }
+  .logos {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+  }
+  .logos :global(img.ut) {
+    height: 14px;
+    width: auto;
+  }
+  address {
+    font-style: normal;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-1);
+  }
+  a {
+    color: var(--color-text-muted);
+  }
+  a:hover {
+    color: var(--color-accent);
+  }
+  .small p {
+    margin-bottom: var(--space-2);
+  }
+</style>

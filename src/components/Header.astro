@@ -1,0 +1,167 @@
+---
+import { Image } from 'astro:assets';
+import utLogo from '../assets/logos/ut.svg';
+import utStacked from '../assets/logos/ut-stacked.svg';
+import PofLogo from './PofLogo.astro';
+import { site } from '../site.config';
+import { url } from '../lib/url';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const current = Astro.url.pathname.slice(base.length) || '/';
+const isActive = (href: string) => current.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href={url('/')}>
+      <PofLogo height={36} />
+      <span class="title">{site.title}</span>
+    </a>
+
+    <nav aria-label="Main" class="desktop">
+      <ul>
+        {
+          site.nav.map((item) => (
+            <li>
+              <a href={url(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a class="ut" href={site.links.ut}>
+      <Image src={utLogo} alt="University of Twente" height={16} />
+    </a>
+    <a class="ut-stacked" href={site.links.ut}>
+      <Image src={utStacked} alt="University of Twente" height={30} />
+    </a>
+
+    <details class="mobile">
+      <summary aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+      </summary>
+      <nav aria-label="Main (mobile)">
+        <ul>
+          {
+            site.nav.map((item) => (
+              <li>
+                <a href={url(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-header-bg);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    min-height: 4rem;
+    position: relative;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-decoration: none;
+    color: var(--color-text);
+    flex-shrink: 0;
+  }
+  .title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: var(--text-lg);
+    letter-spacing: -0.01em;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    padding: var(--space-2) 0;
+    display: block;
+    white-space: nowrap;
+  }
+  nav a:hover,
+  nav a[aria-current='page'] {
+    color: var(--color-accent);
+  }
+
+  .desktop,
+  .ut {
+    display: none;
+  }
+  .ut-stacked {
+    margin-left: auto;
+    display: block;
+  }
+  .ut-stacked :global(img) {
+    height: 30px;
+    width: auto;
+  }
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: var(--space-2);
+    color: var(--color-text);
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  .mobile nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: var(--color-header-bg);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-2) var(--space-4) var(--space-4);
+  }
+
+  @media (min-width: 64rem) {
+    .mobile,
+    .ut-stacked {
+      display: none;
+    }
+    .desktop {
+      display: block;
+      margin-left: auto;
+    }
+    .desktop ul {
+      display: flex;
+      gap: clamp(var(--space-3), 1.6vw, var(--space-5));
+    }
+    .desktop a[aria-current='page'] {
+      box-shadow: inset 0 -2px 0 var(--color-accent);
+    }
+    .ut {
+      display: block;
+      flex-shrink: 0;
+    }
+    .ut :global(img) {
+      height: 16px;
+      width: auto;
+    }
+  }
+</style>

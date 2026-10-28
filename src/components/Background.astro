@@ -1,0 +1,285 @@
+---
+// Subtle animated background illustrations (microbubbles driven by ultrasound).
+// The active design is set by `background` in site.config.ts; only that one is
+// rendered. Colour and strength: --bg-art-* in theme.css.
+// Animations stop for visitors who prefer reduced motion.
+//
+// Designs:
+//   wavefronts  — a bubble pulsing and re-radiating spherical wavefronts
+//   planewave   — a plane wave sweeping a bubble cloud; each bubble oscillates
+//                 in phase with the local pressure
+//   field       — dot-grid pressure field of an expanding wave (canvas)
+//   trace       — radius–time traces of ringing bubbles, drifting like a scope
+
+import { site } from '../site.config';
+
+const bg = site.background;
+const W = 1600;
+const H = 1000;
+
+// Deterministic pseudo-random numbers so the build is reproducible.
+let seed = 7;
+const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+
+// planewave: bubble cloud
+const lambda = 400; // wavelength in viewBox units
+const period = 8; // seconds per wave period
+const bubbles = Array.from({ length: 34 }, () => ({
+  x: 40 + rand() * (W - 80),
+  y: 40 + rand() * (H - 80),
+  r: 3 + rand() * 7,
+}));
+
+// trace: ringing radius-time curves, periodic over W so the loop is seamless
+function ringPath(y0: number, amp: number, burst: number, cycles: number, decay: number) {
+  const pts: string[] = [];
+  for (let x = 0; x <= 2 * W; x += 3) {
+    const t = (x % burst) / burst; // position within one burst
+    const env = Math.exp(-t * decay);
+    const v = amp * env * Math.sin(2 * Math.PI * cycles * t);
+    pts.push(`${x},${(y0 - v).toFixed(1)}`);
+  }
+  return `M${pts.join(' L')}`;
+}
+const traces = [
+  ringPath(220, 70, 800, 9, 5),
+  ringPath(520, 45, 400, 6, 4),
+  ringPath(800, 90, 1600, 14, 6),
+];
+---
+
+<div class="bg-art" aria-hidden="true">
+  <!-- A: wavefronts -->
+  {bg === 'wavefronts' && (
+  <svg class="bg bg-wavefronts" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
+    <g class="source" style="--cx:1260px; --cy:640px">
+      {[0, 1, 2, 3, 4, 5].map((i) => <circle class="ring" cx="1260" cy="640" r="900" style={`animation-delay:${-i * 3}s`} />)}
+      <circle class="bubble" cx="1260" cy="640" r="16" />
+    </g>
+    <g class="source small">
+      {[0, 1, 2, 3].map((i) => <circle class="ring" cx="260" cy="180" r="600" style={`animation-delay:${-i * 3 - 1.5}s`} />)}
+      <circle class="bubble" cx="260" cy="180" r="9" />
+    </g>
+  </svg>
+  )}
+
+  <!-- B: plane wave through a bubble cloud -->
+  {bg === 'planewave' && (
+  <svg class="bg bg-planewave" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="pw-band" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="currentColor" stop-opacity="0"></stop>
+        <stop offset="0.5" stop-color="currentColor" stop-opacity="0.35"></stop>
+        <stop offset="1" stop-color="currentColor" stop-opacity="0"></stop>
+      </linearGradient>
+    </defs>
+    <g class="bands" style={`--lambda:${lambda}px; --period:${period}s`}>
+      {Array.from({ length: Math.ceil(W / lambda) + 2 }, (_, i) => <rect x={(i - 1) * lambda} y="0" width={lambda / 2} height={H} fill="url(#pw-band)" />)}
+    </g>
+    {
+      bubbles.map((b) => (
+        <circle
+          class="pw-bubble"
+          cx={b.x.toFixed(0)}
+          cy={b.y.toFixed(0)}
+          r={b.r.toFixed(1)}
+          style={`animation-delay:${((((b.x / lambda) * period) % period) - period).toFixed(2)}s; animation-duration:${period}s`}
+        />
+      ))
+    }
+  </svg>
+  )}
+
+  <!-- C: pressure field (drawn on canvas) -->
+  {bg === 'field' && <canvas class="bg bg-field"></canvas>}
+
+  <!-- D: radius-time traces -->
+  {bg === 'trace' && (
+  <svg class="bg bg-trace" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
+    <g class="scroll">
+      {traces.map((d) => <path d={d} />)}
+    </g>
+  </svg>
+  )}
+</div>
+
+<script>
+  // Canvas pressure field: runs only when the "field" design is rendered and the tab is visible.
+  const canvas = document.querySelector<HTMLCanvasElement>('.bg-field');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  let raf = 0;
+  let last = 0;
+
+  function active() {
+    return !!canvas;
+  }
+
+  function draw(t: number) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = innerWidth;
+    const h = innerHeight;
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = getComputedStyle(canvas).color;
+    const gap = 26;
+    const sx = w * 0.8;
+    const sy = h * 0.68;
+    const k = (2 * Math.PI) / 150;
+    const omega = (2 * Math.PI) / 5000; // 5 s period
+    for (let y = gap / 2; y < h; y += gap) {
+      for (let x = gap / 2; x < w; x += gap) {
+        const d = Math.hypot(x - sx, y - sy);
+        const p = Math.sin(k * d - omega * t) / Math.sqrt(1 + d / 400);
+        const r = 0.9 + 2.4 * Math.max(0, p);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+    // the driving bubble
+    const R = 9 + 3 * Math.sin(-omega * t);
+    ctx.beginPath();
+    ctx.arc(sx, sy, R, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+
+  function loop(t: number) {
+    if (!active() || document.hidden) {
+      raf = 0;
+      return;
+    }
+    if (t - last > 40) {
+      draw(t);
+      last = t;
+    }
+    raf = requestAnimationFrame(loop);
+  }
+
+  function start() {
+    if (!active()) return;
+    if (reduce.matches) {
+      draw(0);
+      return;
+    }
+    if (!raf) raf = requestAnimationFrame(loop);
+  }
+
+  start();
+  document.addEventListener('visibilitychange', start);
+  addEventListener('resize', () => active() && draw(performance.now()));
+</script>
+
+<style>
+  .bg-art {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    color: var(--bg-art-color);
+    opacity: var(--bg-art-opacity);
+  }
+  .bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* C: fade the field out towards the left, where most text sits. */
+  .bg-field {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.3) 40%, #000 80%);
+    mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.3) 40%, #000 80%);
+  }
+
+  /* A: wavefronts */
+  .ring {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: expand 18s linear infinite;
+  }
+  .bubble {
+    fill: currentColor;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes expand {
+    from {
+      transform: scale(0.02);
+      opacity: 1;
+    }
+    to {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(0.75);
+    }
+    50% {
+      transform: scale(1.25);
+    }
+  }
+
+  /* B: plane wave */
+  .bands {
+    animation: sweep var(--period) linear infinite;
+  }
+  @keyframes sweep {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(var(--lambda));
+    }
+  }
+  .pw-bubble {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation-name: pulse;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  /* D: traces */
+  .scroll {
+    animation: drift 40s linear infinite;
+  }
+  .scroll path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+  @keyframes drift {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-1600px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bg-art * {
+      animation: none !important;
+    }
+  }
+</style>

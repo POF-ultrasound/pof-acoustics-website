@@ -1,0 +1,99 @@
+---
+import Base from '../layouts/Base.astro';
+import PersonCard from '../components/PersonCard.astro';
+import { getPeople, peopleGroups } from '../lib/content';
+
+const current = await getPeople('current');
+const alumni = await getPeople('alumni');
+const groups = peopleGroups
+  .map((g) => ({ ...g, people: current.filter((p) => p.data.group === g.key) }))
+  .filter((g) => g.people.length > 0);
+---
+
+<Base title="People" description="Members of the POF Acoustics team.">
+  <div class="container">
+    <header class="page-header">
+      <h1>People</h1>
+    </header>
+
+    {
+      groups.map((g) => (
+        <section class="group">
+          <h2>{g.label}</h2>
+          <div class="people">
+            {g.people.map((person) => (
+              <PersonCard person={person} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    {
+      alumni.length > 0 && (
+        <details class="alumni">
+          <summary>
+            <h2>Alumni ({alumni.length})</h2>
+          </summary>
+          <ul>
+            {alumni.map((a) => (
+              <li>
+                <strong>{a.data.name}</strong>
+                {a.data.topic && <span class="muted"> — {a.data.topic}</span>}
+                {a.data.years && <span class="muted"> ({a.data.years})</span>}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .group {
+    padding-block: var(--space-5);
+  }
+  .group h2,
+  .alumni h2 {
+    font-size: var(--text-xl);
+  }
+  .people {
+    display: grid;
+    gap: var(--space-6) var(--space-5);
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 10.5rem));
+  }
+  .alumni {
+    margin-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-5);
+  }
+  .alumni summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  .alumni summary::-webkit-details-marker {
+    display: none;
+  }
+  .alumni summary h2 {
+    display: inline;
+  }
+  .alumni summary h2::after {
+    content: ' +';
+    color: var(--color-text-muted);
+  }
+  .alumni[open] summary h2::after {
+    content: ' −';
+  }
+  .alumni ul {
+    columns: 2 18rem;
+    padding: 0;
+    list-style: none;
+    margin-top: var(--space-4);
+  }
+  .alumni li {
+    break-inside: avoid;
+    padding-block: var(--space-1);
+    font-size: var(--text-sm);
+  }
+</style>

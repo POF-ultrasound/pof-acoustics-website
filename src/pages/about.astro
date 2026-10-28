@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+
+const teaching = await getCollection('teaching');
+const events = await getCollection('events');
+---
+
+<Base title="About" description="About the POF Acoustics team.">
+  <div class="container">
+    <header class="page-header">
+      <h1>About</h1>
+    </header>
+
+    <div class="prose">
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      </p>
+      <p>
+        We are part of the <a href={site.links.pof}>Physics of Fluids group</a> at the <a href={site.links.ut}>University of Twente</a>.
+      </p>
+
+      <section>
+        <h2>Teaching</h2>
+        {
+          teaching.length > 0 ? (
+            <ul class="items">
+              {teaching.map((c) => (
+                <li>
+                  {c.data.url ? <a href={c.data.url}>{c.data.title}</a> : <strong>{c.data.title}</strong>}
+                  {c.data.description && <span class="muted"> — {c.data.description}</span>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="muted">Courses will be listed here.</p>
+          )
+        }
+      </section>
+
+      <section>
+        <h2>Schools & conferences</h2>
+        {
+          events.length > 0 ? (
+            <ul class="items">
+              {events.map((e) => (
+                <li>
+                  {e.data.url ? <a href={e.data.url}>{e.data.title}</a> : <strong>{e.data.title}</strong>}
+                  {e.data.description && <span class="muted"> — {e.data.description}</span>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="muted">Recurring summer schools and conferences organised by our PIs will be listed here.</p>
+          )
+        }
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  section {
+    margin-top: var(--space-6);
+  }
+  h2 {
+    font-size: var(--text-xl);
+  }
+  .items {
+    padding-left: 1.1em;
+  }
+  .items li {
+    margin-bottom: var(--space-2);
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+// Small inline icon set (no external icon fonts).
+interface Props {
+  name: string;
+  size?: number;
+}
+const { name, size = 18 } = Astro.props;
+
+const paths: Record<string, string> = {
+  mail: 'M3 5h18v14H3z M3 6l9 7 9-7',
+  globe: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M3 12h18 M12 3c3 3.5 3 14.5 0 18 M12 3c-3 3.5-3 14.5 0 18',
+  github:
+    'M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21',
+  linkedin: 'M4 9h4v11H4z M6 4a2 2 0 1 0 0 4a2 2 0 1 0 0-4z M10 9h4v1.5c.6-1 1.8-1.8 3.5-1.8 2.6 0 3.5 1.7 3.5 4.3V20h-4v-6c0-1.4-.4-2.3-1.7-2.3-1.4 0-1.8 1-1.8 2.3v6h-3.5z',
+  orcid: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M8.5 10v7 M8.5 7.2v.1 M11.5 10v7h2a3.5 3.5 0 0 0 0-7z',
+  scholar: 'M12 3 2 9l10 6 10-6z M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5',
+  external: 'M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
+  lock: 'M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3',
+  rss: 'M5 19a1 1 0 1 0 0-.1z M4 11a9 9 0 0 1 9 9 M4 4a16 16 0 0 1 16 16',
+};
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.8"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  class="icon"
+>
+  <path d={paths[name] ?? ''}></path>
+</svg>
+
+<style>
+  .icon {
+    display: inline-block;
+    vertical-align: -0.2em;
+    flex-shrink: 0;
+  }
+</style>

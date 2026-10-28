@@ -1,0 +1,62 @@
+---
+import '@fontsource-variable/source-sans-3';
+import '@fontsource-variable/source-serif-4';
+import '@fontsource/jetbrains-mono/400.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Background from '../components/Background.astro';
+import { site } from '../site.config';
+import { url } from '../lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const { title, description = site.tagline, noindex = false } = Astro.props;
+const fullTitle = title ? `${title} · ${site.title}` : `${site.title} — ${site.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en" data-palette={site.palette || undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${site.title} news`} href={url('/rss.xml')} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+  </head>
+  <body>
+    <a class="visually-hidden skip" href="#main">Skip to content</a>
+    <Background />
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .skip:focus {
+    position: fixed;
+    top: var(--space-2);
+    left: var(--space-2);
+    width: auto;
+    height: auto;
+    clip: auto;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-bg);
+    z-index: 10;
+  }
+</style>

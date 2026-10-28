@@ -1,0 +1,13 @@
+# Internal and post-processing repositories (compact list on Software & Data).
+# Set `private: true` for repos that require POF-ultrasound org access.
+#
+# - id: example-tool
+#   name: example-tool
+#   description: One-line description.
+#   url: https://github.com/POF-ultrasound/example-tool
+#   private: true
+
+- id: super-resolution-waveforms
+  name: super-resolution-waveforms
+  description: Code for "Waveform-specific performance of deep learning-based ultrasound super resolution models".
+  url: https://github.com/POF-ultrasound/super-resolution-waveforms

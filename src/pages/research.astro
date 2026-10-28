@@ -1,0 +1,138 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { getThemes, getProjects, getTools } from '../lib/content';
+import { url } from '../lib/url';
+
+const themes = await getThemes();
+const projects = await getProjects();
+const tools = await getTools();
+const rendered = await Promise.all(themes.map(async (t) => ({ theme: t, Content: (await render(t)).Content })));
+const themeTitle = Object.fromEntries(themes.map((t) => [t.id, t.data.title]));
+---
+
+<Base title="Research" description="Research themes and projects of the POF Acoustics team.">
+  <div class="container">
+    <header class="page-header">
+      <h1>Research</h1>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.</p>
+    </header>
+
+    {
+      rendered.map(({ theme, Content }) => {
+        const related = tools.filter((tool) => tool.data.themes.some((r) => r.id === theme.id));
+        return (
+          <section class="theme" id={theme.id}>
+            <div class="text">
+              <h2>{theme.data.title}</h2>
+              <div class="prose">
+                <Content />
+              </div>
+              <div class="link-row">
+                <a href={url(`/publications/?theme=${theme.id}`)}>Publications →</a>
+                {related.map((tool) => (
+                  <a href={url(`/software/${tool.id}/`)}>{tool.data.name} →</a>
+                ))}
+              </div>
+            </div>
+            <div class="figure">
+              {theme.data.image ? (
+                <Image src={theme.data.image} alt={theme.data.imageAlt ?? ''} width={720} />
+              ) : (
+                <div class="figure-placeholder">Figure</div>
+              )}
+            </div>
+          </section>
+        );
+      })
+    }
+
+    <section class="section projects">
+      <h2>Projects</h2>
+      <div class="grid">
+        {
+          projects.map((p) => {
+            const d = p.data;
+            const Tag = d.url ? 'a' : 'div';
+            return (
+              <Tag class="card" href={d.url}>
+                <div class="card-body">
+                  <div class="project-head">
+                    <h3>{d.title}</h3>
+                    {d.funderLogo ? (
+                      <Image src={d.funderLogo} alt={d.funder ?? ''} height={64} class="funder-logo" />
+                    ) : (
+                      d.funder && <span class="tag">{d.funder}</span>
+                    )}
+                  </div>
+                  {(d.start || d.end) && (
+                    <span class="muted dates">
+                      {d.start}–{d.end ?? 'present'}
+                    </span>
+                  )}
+                  <p>{d.summary}</p>
+                  {d.themes.length > 0 && (
+                    <div class="link-row">
+                      {d.themes.map((t) => (
+                        <span class="tag">{themeTitle[t.id]}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Tag>
+            );
+          })
+        }
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .theme {
+    display: grid;
+    gap: var(--space-5);
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--color-border);
+    scroll-margin-top: 5rem;
+  }
+  @media (min-width: 56rem) {
+    .theme {
+      grid-template-columns: 3fr 2fr;
+      align-items: start;
+    }
+  }
+  .theme h2 {
+    font-size: var(--text-xl);
+  }
+  .figure :global(img) {
+    border-radius: var(--radius-lg);
+  }
+  .figure-placeholder {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+    background: var(--color-surface);
+    display: grid;
+    place-items: center;
+    color: var(--color-text-faint);
+    font-size: var(--text-sm);
+  }
+  .projects h2 {
+    font-size: var(--text-xl);
+  }
+  .project-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .project-head :global(.funder-logo) {
+    height: 32px;
+    width: auto;
+  }
+  .dates {
+    font-size: var(--text-sm);
+  }
+</style>

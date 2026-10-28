@@ -1,0 +1,54 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import type { CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import NewsItem from '../../components/NewsItem.astro';
+import Icon from '../../components/Icon.astro';
+import { getNews } from '../../lib/content';
+import { url } from '../../lib/url';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  return paginate(await getNews(), { pageSize: 10 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as { page: Page<CollectionEntry<'news'>> };
+---
+
+<Base title="News" description="News from the POF Acoustics team.">
+  <div class="container">
+    <header class="page-header">
+      <h1>News</h1>
+      <p>Papers, conferences, defenses and other updates. <a href={url('/rss.xml')}><Icon name="rss" size={16} /> RSS</a></p>
+    </header>
+
+    <div class="list">
+      {page.data.map((post) => <NewsItem post={post} />)}
+    </div>
+
+    {
+      page.lastPage > 1 && (
+        <nav class="pager" aria-label="News pages">
+          {page.url.prev ? <a href={page.url.prev}>← Newer</a> : <span />}
+          <span class="muted">
+            Page {page.currentPage} of {page.lastPage}
+          </span>
+          {page.url.next ? <a href={page.url.next}>Older →</a> : <span />}
+        </nav>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .list {
+    border-bottom: 1px solid var(--color-border);
+    max-width: 56rem;
+  }
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    max-width: 56rem;
+    padding-top: var(--space-5);
+    font-size: var(--text-sm);
+  }
+</style>

@@ -1,0 +1,7 @@
+# Long-lived courses taught by team members (shown on About).
+#
+# - id: course-code
+#   title: Course name (course code)
+#   description: One line.
+#   url: https://osiris.utwente.nl/...
+[]

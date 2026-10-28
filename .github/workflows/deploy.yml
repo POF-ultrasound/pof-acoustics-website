@@ -1,0 +1,65 @@
+name: Deploy
+
+# Builds the site on every merge to main (and weekly, so expired positions
+# disappear) and publishes it to the gh-pages branch.
+#
+# Until pof-acoustics.utwente.nl points here, the site is served at
+# https://pof-ultrasound.github.io/pof-acoustics-website/.
+# Once the domain is live, set repository variables (Settings → Variables):
+#   SITE_URL = https://pof-acoustics.utwente.nl
+#   SITE_BASE_PATH = /
+# and add the file public/CNAME containing: pof-acoustics.utwente.nl
+#
+# Each run also uploads `site-for-ut-portal` (built for the domain root) for
+# manual upload to the UT portal, in case the domain cannot point to GitHub.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Build for GitHub Pages
+        run: npm run build
+        env:
+          SITE: ${{ vars.SITE_URL || 'https://pof-ultrasound.github.io' }}
+          BASE_PATH: ${{ vars.SITE_BASE_PATH || '/pof-acoustics-website/' }}
+
+      - name: Publish to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+          clean-exclude: pr-preview/
+          force: false
+
+      - name: Build for UT portal (domain root)
+        run: npm run build -- --outDir dist-ut
+        env:
+          SITE: https://pof-acoustics.utwente.nl
+          BASE_PATH: /
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-for-ut-portal
+          path: dist-ut
+          retention-days: 30

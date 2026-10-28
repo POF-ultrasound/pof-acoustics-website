@@ -1,0 +1,166 @@
+---
+import Base from '../layouts/Base.astro';
+import { getPublications, teamMatcher, formatAuthor } from '../lib/bibtex';
+import { getThemes, getTeamNames } from '../lib/content';
+
+const pubs = getPublications();
+const themes = await getThemes();
+const isTeam = teamMatcher(await getTeamNames());
+const themeTitle = Object.fromEntries(themes.map((t) => [t.id, t.data.title]));
+const years = [...new Set(pubs.map((p) => p.year))].sort((a, b) => b - a);
+// Untagged entries are flagged in dev and PR previews only, never in production.
+const showCurationHints = import.meta.env.DEV || import.meta.env.BASE_URL !== '/';
+---
+
+<Base title="Publications" description="Peer-reviewed publications of the POF Acoustics team.">
+  <div class="container">
+    <header class="page-header">
+      <h1>Publications</h1>
+      <p>Selected peer-reviewed work since 2022. Team members in bold.</p>
+    </header>
+
+    <div class="filters" role="group" aria-label="Filter by research theme">
+      <button type="button" data-theme="" aria-pressed="true">All</button>
+      {
+        themes.map((t) => (
+          <button type="button" data-theme={t.id} aria-pressed="false">
+            {t.data.title}
+          </button>
+        ))
+      }
+    </div>
+
+    {
+      years.map((year) => (
+        <section class="year" data-year={year}>
+          <h2>{year}</h2>
+          <ol>
+            {pubs
+              .filter((p) => p.year === year)
+              .map((p) => (
+                <li data-themes={p.themes.join(' ')}>
+                  <p class="title">{p.title}</p>
+                  <p class="authors">
+                    {p.authors.map((a, i) => (
+                      <>
+                        {isTeam(a) ? <strong>{formatAuthor(a)}</strong> : formatAuthor(a)}
+                        {i < p.authors.length - 1 ? ', ' : ''}
+                      </>
+                    ))}
+                  </p>
+                  <p class="venue">
+                    <em>{p.venue}</em>{[p.volume, p.pages].filter(Boolean).map((x) => `, ${x}`).join('')} ({p.year})
+                  </p>
+                  <p class="links">
+                    {p.doi && <a href={`https://doi.org/${p.doi}`}>DOI</a>}
+                    {p.pdf && <a href={p.pdf}>PDF</a>}
+                    {p.code && <a href={p.code}>Code</a>}
+                    {p.data && <a href={p.data}>Data</a>}
+                    {p.themes.map((t) => (
+                      <span class="tag">{themeTitle[t] ?? t}</span>
+                    ))}
+                    {showCurationHints && p.themes.length === 0 && <span class="placeholder-note">untagged: add `themes` in publications.bib</span>}
+                  </p>
+                </li>
+              ))}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+</Base>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filters button');
+  const items = document.querySelectorAll<HTMLLIElement>('.year li');
+  const years = document.querySelectorAll<HTMLElement>('.year');
+
+  function apply(theme: string) {
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.theme === theme)));
+    items.forEach((li) => {
+      li.hidden = !!theme && !(li.dataset.themes ?? '').split(' ').includes(theme);
+    });
+    years.forEach((y) => {
+      y.hidden = !y.querySelector('li:not([hidden])');
+    });
+    const u = new URL(location.href);
+    if (theme) u.searchParams.set('theme', theme);
+    else u.searchParams.delete('theme');
+    history.replaceState(null, '', u);
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.theme ?? '')));
+  const initial = new URLSearchParams(location.search).get('theme');
+  if (initial && document.querySelector(`.filters [data-theme="${CSS.escape(initial)}"]`)) apply(initial);
+</script>
+
+<style>
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+  .filters button {
+    font: inherit;
+    font-size: var(--text-sm);
+    padding: var(--space-1) var(--space-3);
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+  .filters button:hover {
+    border-color: var(--color-accent);
+  }
+  .filters button[aria-pressed='true'] {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+  .year {
+    padding-top: var(--space-4);
+  }
+  .year h2 {
+    font-size: var(--text-xl);
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-2);
+  }
+  ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    padding-block: var(--space-3);
+    max-width: 52rem;
+  }
+  li p {
+    margin: 0;
+  }
+  .title {
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .authors,
+  .venue {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .authors strong {
+    color: var(--color-text);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    margin-top: var(--space-1);
+  }
+  .links a {
+    font-weight: 600;
+  }
+</style>

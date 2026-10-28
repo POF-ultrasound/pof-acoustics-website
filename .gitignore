@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ut/
+.astro/
+
+# Environment and secrets
+.env
+.env.*
+
+# Logs
+npm-debug.log*
+*.log
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Local tool settings (Claude Code, etc.)
+.claude/

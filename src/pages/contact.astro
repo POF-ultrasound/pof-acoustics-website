@@ -1,0 +1,97 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { getOpenPositions } from '../lib/content';
+import { site } from '../site.config';
+import { formatDate } from '../lib/url';
+
+const positions = await Promise.all(
+  (await getOpenPositions()).map(async (p) => ({ position: p, Content: (await render(p)).Content })),
+);
+---
+
+<Base title="Contact" description="Contact the POF Acoustics team.">
+  <div class="container">
+    <header class="page-header">
+      <h1>Contact</h1>
+    </header>
+
+    {
+      positions.length > 0 && (
+        <section id="positions" class="positions">
+          <h2>Open positions</h2>
+          {positions.map(({ position, Content }) => (
+            <article>
+              <h3>{position.data.title}</h3>
+              <p class="muted deadline">Apply before {formatDate(position.data.expires)}</p>
+              <p>{position.data.summary}</p>
+              <div class="prose">
+                <Content />
+              </div>
+              {position.data.link && (
+                <a href={position.data.link}>
+                  Full description <Icon name="external" size={14} />
+                </a>
+              )}
+            </article>
+          ))}
+        </section>
+      )
+    }
+
+    <section class="contact">
+      <div>
+        <h2>Email</h2>
+        <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+      </div>
+      <div>
+        <h2>Address</h2>
+        <address>
+          {site.address.map((line) => <>{line}<br /></>)}
+        </address>
+        <p><a href={site.mapUrl}>Open in map <Icon name="external" size={14} /></a></p>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  h2 {
+    font-size: var(--text-xl);
+  }
+  .positions {
+    padding-bottom: var(--space-6);
+    margin-bottom: var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    scroll-margin-top: 5rem;
+  }
+  .positions article {
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--radius);
+    margin-bottom: var(--space-4);
+    max-width: var(--prose-width);
+  }
+  .positions h3 {
+    margin-bottom: var(--space-1);
+  }
+  .deadline {
+    font-size: var(--text-sm);
+  }
+  .contact {
+    display: grid;
+    gap: var(--space-6);
+  }
+  @media (min-width: 48rem) {
+    .contact {
+      grid-template-columns: 1fr 1fr;
+      max-width: 48rem;
+    }
+  }
+  address {
+    font-style: normal;
+    margin-bottom: var(--space-3);
+  }
+</style>

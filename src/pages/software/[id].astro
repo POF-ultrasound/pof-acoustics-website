@@ -1,0 +1,140 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { getTools, getThemes } from '../../lib/content';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const tools = await getTools();
+  return tools.map((tool) => ({ params: { id: tool.id }, props: { tool } }));
+}
+
+const { tool } = Astro.props as { tool: CollectionEntry<'tools'> };
+const t = tool.data;
+const { Content } = await render(tool);
+const themes = await getThemes();
+const toolThemes = themes.filter((th) => t.themes.some((r) => r.id === th.id));
+---
+
+<Base title={t.name} description={t.summary}>
+  <div class="container">
+    <header class="page-header">
+      <p class="eyebrow"><a href={url('/software/')}>Software & Data</a> / {t.kind === 'dataset' ? 'Dataset' : 'Software'}</p>
+      <h1>{t.name}</h1>
+      <p>{t.summary}</p>
+      <div class="link-row actions">
+        {
+          t.repo && (
+            <a class="button" href={t.repo}>
+              <Icon name="github" size={16} /> Repository
+            </a>
+          )
+        }
+        {
+          t.docs && (
+            <a class="button secondary" href={t.docs}>
+              Documentation
+            </a>
+          )
+        }
+        {
+          t.doi && (
+            <a class="button secondary" href={`https://doi.org/${t.doi}`}>
+              DOI: {t.doi}
+            </a>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="layout">
+      <div class="prose">
+        <Content />
+
+        {
+          t.citation && (
+            <section>
+              <h2>How to cite</h2>
+              <pre>{t.citation.trim()}</pre>
+            </section>
+          )
+        }
+      </div>
+
+      <aside class="meta">
+        {t.license && (
+          <div>
+            <h3>License</h3>
+            <p>{t.license}</p>
+          </div>
+        )}
+        {
+          toolThemes.length > 0 && (
+            <div>
+              <h3>Research themes</h3>
+              <ul>
+                {toolThemes.map((th) => (
+                  <li>
+                    <a href={url(`/research/#${th.id}`)}>{th.data.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+        <div>
+          <h3>Related papers</h3>
+          <p><a href={url(`/publications/?theme=${t.themes[0]?.id ?? ''}`)}>Publications in this area →</a></p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .actions {
+    margin-top: var(--space-4);
+  }
+  .layout {
+    display: grid;
+    gap: var(--space-6);
+  }
+  @media (min-width: 56rem) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr) 16rem;
+    }
+  }
+  .prose :global(img) {
+    margin-block: var(--space-5);
+    border: 1px solid var(--color-border);
+  }
+  .prose h2 {
+    font-size: var(--text-xl);
+    margin-top: var(--space-6);
+  }
+  pre {
+    white-space: pre-wrap;
+  }
+  .meta {
+    font-size: var(--text-sm);
+    display: grid;
+    gap: var(--space-5);
+    align-content: start;
+  }
+  .meta h3 {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2);
+  }
+  .meta ul {
+    padding-left: 1.1em;
+    margin: 0;
+  }
+  .meta p {
+    margin: 0;
+  }
+</style>

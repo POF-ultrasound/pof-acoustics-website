@@ -1,0 +1,115 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import ToolCard from '../components/ToolCard.astro';
+import NewsItem from '../components/NewsItem.astro';
+import HiringBanner from '../components/HiringBanner.astro';
+import { site } from '../site.config';
+import { getThemes, getTools, getNews } from '../lib/content';
+import { url } from '../lib/url';
+
+const themes = await getThemes();
+const featured = (await getTools()).filter((t) => t.data.featured);
+const news = (await getNews()).slice(0, 3);
+---
+
+<Base>
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="eyebrow">Physics of Fluids · University of Twente</p>
+      <h1>{site.mission}</h1>
+      <div class="link-row">
+        <a class="button" href={url('/software/')}>Software & Data</a>
+        <a class="button secondary" href={url('/research/')}>Our research</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Research themes</h2>
+        <a href={url('/research/')}>All research →</a>
+      </div>
+      <ul class="scroll-row" role="list">
+        {
+          themes.map((t) => (
+            <li>
+              <a class="card" href={url(`/research/#${t.id}`)}>
+                {t.data.image && <Image src={t.data.image} alt={t.data.imageAlt ?? ''} width={480} height={300} fit="cover" />}
+                <div class="card-body">
+                  <h3>{t.data.title}</h3>
+                  <p>{t.data.summary}</p>
+                </div>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Software & data</h2>
+        <a href={url('/software/')}>All tools →</a>
+      </div>
+      <ul class="scroll-row" role="list">
+        {
+          featured.map((tool) => (
+            <li>
+              <ToolCard tool={tool} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Latest news</h2>
+        <a href={url('/news/')}>All news →</a>
+      </div>
+      <div class="news-list panel">
+        {news.map((post) => <NewsItem post={post} />)}
+      </div>
+    </div>
+  </section>
+
+  <HiringBanner />
+</Base>
+
+<style>
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    padding-block: var(--space-8);
+  }
+  .hero h1 {
+    max-width: 38rem;
+    font-size: clamp(1.75rem, 1.2rem + 2vw, var(--text-3xl));
+    margin-bottom: var(--space-5);
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  .section-head h2 {
+    margin: 0;
+    font-size: var(--text-xl);
+  }
+  .section-head a {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .news-list :global(.news:first-child) {
+    border-top: 0;
+  }
+</style>

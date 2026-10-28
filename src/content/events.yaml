@@ -1,0 +1,8 @@
+# Recurring summer schools / conferences organised or chaired by the PIs (shown on About).
+# One-off events belong in News.
+#
+# - id: event-slug
+#   title: Event name
+#   description: One line, e.g. "Biennial summer school, co-organised by M. Versluis".
+#   url: https://...
+[]

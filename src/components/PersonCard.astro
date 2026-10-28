@@ -1,0 +1,114 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { initials } from '../lib/url';
+import Icon from './Icon.astro';
+
+interface Props {
+  person: CollectionEntry<'people'>;
+}
+
+const p = Astro.props.person.data;
+const links = [
+  p.email && { icon: 'mail', label: 'Email', href: `mailto:${p.email}` },
+  p.orcid && { icon: 'orcid', label: 'ORCID', href: `https://orcid.org/${p.orcid}` },
+  p.scholar && { icon: 'scholar', label: 'Google Scholar', href: p.scholar },
+  p.github && { icon: 'github', label: 'GitHub', href: `https://github.com/${p.github}` },
+  p.linkedin && { icon: 'linkedin', label: 'LinkedIn', href: p.linkedin },
+  p.website && { icon: 'globe', label: 'Website', href: p.website },
+].filter(Boolean) as { icon: string; label: string; href: string }[];
+---
+
+<article class="person">
+  {
+    p.photo ? (
+      <Image
+        src={p.photo}
+        alt=""
+        width={320}
+        height={320}
+        fit="cover"
+        position={p.photoPosition}
+        format="webp"
+        quality={80}
+        class="photo"
+      />
+    ) : (
+      <div class="photo avatar" aria-hidden="true">
+        {initials(p.name)}
+      </div>
+    )
+  }
+  <div class="info">
+    <h3>{p.name}</h3>
+    <p class="role">{p.role}</p>
+    {p.topic && <p class="topic">{p.topic}</p>}
+    {
+      links.length > 0 && (
+        <ul class="links">
+          {links.map((l) => (
+            <li>
+              <a href={l.href} aria-label={`${l.label}: ${p.name}`} title={l.label}>
+                <Icon name={l.icon} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .person {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .photo {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-strong);
+  }
+  .avatar {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    letter-spacing: 0.02em;
+  }
+  h3 {
+    margin: 0;
+    font-size: var(--text-base);
+  }
+  .role {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  .topic {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    line-height: 1.45;
+  }
+  .links {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-2) 0 0;
+    display: flex;
+    gap: var(--space-3);
+  }
+  .links a {
+    color: var(--color-text-muted);
+  }
+  .links a:hover {
+    color: var(--color-accent);
+  }
+</style>
